@@ -90,7 +90,7 @@ class ui:
         self.showCharacterBnt.pack()
         return
 
-    def __settingNumberControl(self) -> None:
+    def __settingSegmentControl(self) -> None:
         """_summary_
             setting the Number Control Frame 
         """
@@ -190,7 +190,7 @@ class ui:
 
         self.__settingLeftFrame()
         self.__settingSegmentFrame()
-        self.__settingNumberControl()
+        self.__settingSegmentControl()
 
         self.__leftFrame.pack(side=LEFT)
         "--End of Right Frame--"
