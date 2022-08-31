@@ -109,6 +109,11 @@ class ui:
                                          text=ui.MODE_STR[0],
                                          bootstyle="warning-toolbutton")
         self.changeModeBnt.pack()
+
+        self.invBnt = Checkbutton(self.__leftFrame,
+                                  text='Inverse',
+                                  bootstyle='warning-toolbutton')
+        self.invBnt.pack()
         return
 
     def __settingRightFrame(self) -> None:

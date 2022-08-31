@@ -25,6 +25,7 @@ class Func(ui):
         self.changeModeBnt.configure(command=self.__changeModeFunc)
         self.clearInputBnt.configure(command=self.__clearInputFunc)
         self.addInputBnt.configure(command=self.__addInputFunc)
+        self.invBnt.configure(command=self.__invModeFunc)
         return
 
     def __init__(self):
@@ -36,6 +37,7 @@ class Func(ui):
         self.__showState = False
         self.__poseMode = False  # False -> True <-
         self.__addInputStr = ('', '')
+        self.__invMode = False  # True inv Mode
 
         logging.basicConfig(level=logging.DEBUG, format=Func.DISPLAY_FORMAT)
         self.__link()
@@ -51,14 +53,17 @@ class Func(ui):
         Args:
             numberID (int): _description_
         """
+        invBit = lambda x: int(not bool(x))
+
         logging.info(f"on click {numberID}")
-        self.__hexCodeBuilder[numberID - 1] = int(\
-                                                not bool(self.__hexCodeBuilder[numberID - 1]))
+
+        self.__hexCodeBuilder[numberID - 1] = invBit(
+            self.__hexCodeBuilder[numberID - 1])
 
         self.__refreshPreView()
 
         logging.info(
-            f"now Build is {self.__hexCodeBuilder } state:{self.segmentBntDict[numberID].state()}"
+            f"now Build is {self.__hexCodeBuilder } state:{self.segmentBntDict[numberID].instate(['selected'])}"
         )
         return
 
@@ -81,10 +86,12 @@ class Func(ui):
         self.preViewText.configure(state='normal')
 
         self.preViewText.delete(1.0, END)
+
+        tmpInvStr = self.__hexCodeBuilder if not self.__invMode \
+                                          else Func.__invList(self.__hexCodeBuilder)
+
         tmpStr = ''.join(
-            map(
-                str, self.__hexCodeBuilder
-                if not self.__poseMode else self.__hexCodeBuilder[::-1]))
+            map(str, tmpInvStr if not self.__poseMode else tmpInvStr[::-1]))
 
         self.preViewText.insert(1.0, tmpStr)
 
@@ -100,9 +107,11 @@ class Func(ui):
         self.outPutText.text.configure(state='normal')
 
         self.outPutText.text.delete(1.0, END)
+        tmpInvDisplay = self.__listDisplayHexCode if not self.__invMode \
+                                                  else [Func.__invList(elm) for elm in self.__listDisplayHexCode]
 
-        tmp = self.__listDisplayHexCode if not self.__poseMode  \
-                                        else [elm[::-1] for elm in self.__listDisplayHexCode]
+        tmp = tmpInvDisplay if not self.__poseMode  \
+                            else [elm[::-1] for elm in tmpInvDisplay]
 
         if (self.__addInputStr != ('', '')):
             tmp = [
@@ -110,9 +119,7 @@ class Func(ui):
                 for elm in tmp
             ]
 
-        displayStr = '\n'.join(tmp)
-        # logging.info(displayStr)
-        self.outPutText.text.insert(1.0, displayStr)
+        self.outPutText.text.insert(1.0, index='\n'.join(tmp))
 
         self.outPutText.text.configure(state='disabled')
         logging.info('refresh')
@@ -186,4 +193,24 @@ class Func(ui):
         self.__addInputStr = ('', '')
 
         self.clearInputBnt.state(['!selected'])
+        return
+
+    def __invList(lst):
+
+        numList = lambda tmp: [int(not elm) for elm in tmp]
+
+        if type(lst) is list:
+
+            return numList(lst)
+
+        if type(lst) is str:
+
+            return ''.join(map(str, numList(list(map(int, list(lst))))))
+
+    def __invModeFunc(self):
+
+        self.__invMode = not self.__invMode
+        logging.info(f"invMode :{self.__invMode}")
+        self.__refreshPreView()
+        self.__refresh()
         return
